@@ -1,4 +1,5 @@
 local c = require "protobuf.c"
+local str = require "str"
 
 local setmetatable = setmetatable
 local type = type
@@ -214,8 +215,11 @@ local encode_type_cache = {}
 local function encode_message(CObj, message_type, t)
 	local type = encode_type_cache[message_type]
 	for k,v in pairs(t) do
+		print("k:", k, ", v:", v)
 		local func = type[k]
-		func(CObj, k , v)
+		if func then
+			func(CObj, k , v)
+		end
 	end
 end
 
@@ -305,8 +309,13 @@ local _encode_type_meta = {}
 
 function _encode_type_meta:__index(key)
 	local t, msg = c._env_type(P, self._CType, key)
-	local func = assert(_writer[t],key)(msg)
-	self[key] = func
+	-- local func = assert(_writer[t],key)(msg)
+	-- self[key] = func
+	local func
+	if _writer[t] then
+		func = _writer[t](msg)
+		self[key] = func
+	end
 	return func
 end
 

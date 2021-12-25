@@ -1,4 +1,5 @@
 local protobuf = require "protobuf"
+local str = require "str"
 
 addr = io.open("../../build/addressbook.pb","rb")
 buffer = addr:read "*a"
@@ -28,7 +29,8 @@ addressbook = {
 	phone = {
 		{ number = "1301234567" },
 		{ number = "87654321", type = "WORK" },
-	}
+	},
+	-- hello = 1,
 }
 
 code = protobuf.encode("tutorial.Person", addressbook)
