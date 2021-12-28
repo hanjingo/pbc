@@ -3,18 +3,18 @@
 
 #include <stdlib.h>
 #include <string.h>
-
+// 槽
 struct _pbcM_ip_slot {
-	int id;
-	void * pointer;
-	int next;
+	int id;         // 
+	void * pointer; // 
+	int next;       // 
 };
 
 struct map_ip {
-	size_t array_size;
-	void ** array;
-	size_t hash_size;
-	struct _pbcM_ip_slot * slot;
+	size_t array_size;           // 数组长度
+	void ** array;               // 数组
+	size_t hash_size;            // hash长度
+	struct _pbcM_ip_slot * slot; // 
 };
 
 struct _pbcM_si_slot {

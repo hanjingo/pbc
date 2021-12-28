@@ -317,7 +317,7 @@ setmetatable(encode_type_cache , {
 		return v
 	end
 })
-
+-- 编码; message:proto定义的message，t:table, func:自定义编码函数
 function M.encode( message, t , func , ...)
 	local encoder = c._wmessage_new(P, message)
 	assert(encoder ,  message)
