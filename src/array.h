@@ -6,18 +6,18 @@
 #include "alloc.h"
 
 typedef union _pbc_var {
-	struct longlong integer;
-	double real;
+	struct longlong integer; // 长整型
+	double real;             // 浮点型
 	struct {
 		const char * str;
 		int len;
-	} s;
+	} s;                     // 自制string类型
 	struct {
 		int id;
 		const char * name;
-	} e;
-	struct pbc_slice m;
-	void * p[2];
+	} e;                     // ？
+	struct pbc_slice m;      // 切片
+	void * p[2];             // 任意类型
 } pbc_var[1];
 
 void _pbcA_open(pbc_array);

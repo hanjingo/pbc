@@ -26,10 +26,10 @@ extern "C" {
 #endif
 
 typedef struct _pbc_array { char _data[PBC_ARRAY_CAP]; } pbc_array[1];
-
+// 切片
 struct pbc_slice {
-	void *buffer;
-	int len;
+	void *buffer; // 缓冲区
+	int len;      // 长度
 };
 
 struct pbc_pattern;

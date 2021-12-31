@@ -4,15 +4,15 @@
 
 #include <stdlib.h>
 #include <string.h>
-
+// 数组
 struct array {
-	int number;
-	struct heap *heap;
-	union _pbc_var * a;
+	int number;         // 
+	struct heap *heap;  // 内存区
+	union _pbc_var * a; // 任意类型
 };
-
+// 内部域 = (数组尺寸:64 - 数组大小) / 任意类型大小
 #define INNER_FIELD ((PBC_ARRAY_CAP - sizeof(struct array)) / sizeof(pbc_var))
-
+// 新建数组
 void 
 _pbcA_open(pbc_array _array) {
 	struct array * a = (struct array *)_array;
