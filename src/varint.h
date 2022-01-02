@@ -2,10 +2,10 @@
 #define PROTOBUF_C_VARINT_H
 
 #include <stdint.h>
-
+// 长整型
 struct longlong {
-	uint32_t low;
-	uint32_t hi;
+	uint32_t low; // 低位
+	uint32_t hi;  // 高位
 };
 
 int _pbcV_encode32(uint32_t number, uint8_t buffer[10]);

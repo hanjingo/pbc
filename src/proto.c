@@ -88,7 +88,7 @@ _pbcP_push_enum(struct pbc_env * p, const char *name, struct map_kv *table, int 
 	_pbcM_sp_insert(p->enums, name , v);
 	return v;
 }
-
+// 将一条信息推入队列；p:pbc_env, name:键, f:message field, queue: 队列
 void 
 _pbcP_push_message(struct pbc_env * p, const char *name, struct _field *f , pbc_array queue) {
 	struct _message * m = (struct _message *)_pbcM_sp_query(p->msgs, name);
@@ -174,7 +174,7 @@ _pbcP_message_default(struct _message * m, const char * name, pbc_var defv) {
 	*defv = *(f->default_v);
 	return f->type;
 }
-
+// 判断field的pb类型
 int 
 _pbcP_type(struct _field * field, const char ** type) {
 	if (field == NULL) {

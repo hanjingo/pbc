@@ -20,7 +20,7 @@ static const char * TYPENAME[] = {
 	"int64",	// 10
 	"uint",	// 11
 };
-
+// 解码未知类型数据; f:解码函数，ud:user data, id:, a:, start:
 static int
 call_unknown(pbc_decoder f, void * ud, int id, struct atom *a, uint8_t * start) {
 	union pbc_value v;
@@ -50,7 +50,7 @@ call_unknown(pbc_decoder f, void * ud, int id, struct atom *a, uint8_t * start) 
 	}
 	return 0;
 }
-
+// 解码已知类型数据; a:入参
 static int
 call_type(pbc_decoder pd, void * ud, struct _field *f, struct atom *a, uint8_t * start) {
 	union pbc_value v;
@@ -125,7 +125,7 @@ call_type(pbc_decoder pd, void * ud, struct _field *f, struct atom *a, uint8_t *
 	pd(ud, type, type_name, &v, f->id, f->name);
 	return 0;
 }
-
+// 解码数组 
 static int
 call_array(pbc_decoder pd, void * ud, struct _field *f, uint8_t * buffer , int size) {
 	union pbc_value v;
@@ -297,7 +297,7 @@ call_array(pbc_decoder pd, void * ud, struct _field *f, uint8_t * buffer , int s
 			return -1;
 	}
 }
-
+// 解码；type_name:, slice:, pd:解码器, ud:user data
 int
 pbc_decode(struct pbc_env * env, const char * type_name , struct pbc_slice * slice, pbc_decoder pd, void *ud) {
 	struct _message * msg = _pbcP_get_message(env, type_name);
@@ -328,7 +328,7 @@ pbc_decode(struct pbc_env * env, const char * type_name , struct pbc_slice * sli
 				_pbcC_close(_ctx);
 				return -i-1;
 			}
-		} else if (f->label == LABEL_PACKED) {
+		} else if (f->label == LABEL_PACKED) { // packed关键字
 			struct atom * a = &ctx->a[i];
 			int n = call_array(pd, ud, f , start + a->v.s.start , a->v.s.end - a->v.s.start);
 			if (n < 0) {

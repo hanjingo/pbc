@@ -14,7 +14,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdarg.h>
-
+// 设置指定类型的默认值；outpu:输出, ctype:类型， defv:默认值
 static void
 set_default_v(void * output, int ctype, pbc_var defv) {
 	switch (ctype) {
@@ -44,7 +44,7 @@ set_default_v(void * output, int ctype, pbc_var defv) {
 		break;
 	}
 }
-
+// 设置C语言匹配域的默认值，并通过output输出
 static void
 _pattern_set_default(struct _pattern_field *field, char *output) {
 	if (field->ctype == CTYPE_ARRAY || field->ctype == CTYPE_PACKED) {
@@ -58,7 +58,7 @@ _pattern_set_default(struct _pattern_field *field, char *output) {
 	}
 	set_default_v(output + field->offset, field->ctype, field->defv);
 }
-
+// 设置C语言匹配项的，并通过output输出
 void
 pbc_pattern_set_default(struct pbc_pattern *pat, void *output) {
 	int i;
@@ -68,7 +68,7 @@ pbc_pattern_set_default(struct pbc_pattern *pat, void *output) {
 }
 
 // pattern unpack
-
+// 二分查找匹配；pat:待匹配项, id:message file id
 static struct _pattern_field *
 bsearch_pattern(struct pbc_pattern *pat, int id)
 {
@@ -88,7 +88,7 @@ bsearch_pattern(struct pbc_pattern *pat, int id)
 	}
 	return NULL;
 }
-
+// 统一给double/float/var类型赋值
 static inline int
 write_real(int ctype, double v, void *out) {
 	switch(ctype) {
@@ -104,7 +104,7 @@ write_real(int ctype, double v, void *out) {
 	}
 	return -1;
 }
-
+// 统一给int32/int64/bool/int8/int16/var类型赋值；ctype:C语言类型，i:传入的参数，out:传出的参数
 static inline int
 write_longlong(int ctype, struct longlong *i, void *out) {
 	switch(ctype) {
@@ -129,14 +129,14 @@ write_longlong(int ctype, struct longlong *i, void *out) {
 	}
 	return -1;
 }
-
+// 给所有整型类型赋值
 static inline int
 write_integer(int ctype, struct atom *a, void *out) {
 	return write_longlong(ctype, &(a->v.i), out);
 }
 
 static int unpack_array(int ptype, char *buffer, struct atom *, pbc_array _array);
-
+// 解包；buffer:待解析的缓冲区, size:缓冲区长度, ptype:protobuf元素类型, array:用来输出结果的数组
 int
 _pbcP_unpack_packed(uint8_t *buffer, int size, int ptype, pbc_array array) {
 	pbc_var var;
@@ -279,7 +279,7 @@ _pbcP_unpack_packed(uint8_t *buffer, int size, int ptype, pbc_array array) {
 	}
 	return -1;
 }
-
+// 解析域；ctype:, ptype:, buffer:, a:, out:
 static int
 unpack_field(int ctype, int ptype, char * buffer, struct atom * a, void *out) {
 	if (ctype == CTYPE_ARRAY) {
@@ -348,7 +348,7 @@ unpack_array(int ptype, char *buffer, struct atom * a, pbc_array _array) {
 
 	return 0;
 }
-
+// 关闭匹配项的数组
 void 
 pbc_pattern_close_arrays(struct pbc_pattern *pat, void * data) {
 	int i;
@@ -806,7 +806,7 @@ pbc_pattern_pack(struct pbc_pattern *pat, void *input, struct pbc_slice * s)
 	s->len = len;
 	return ret;
 }
-
+// 通过field序号适配解码成C结构体；pat:匹配项集合, s:pb内容, output:返回值
 int 
 pbc_pattern_unpack(struct pbc_pattern *pat, struct pbc_slice *s, void * output) {
 	if (s->len == 0) {
@@ -814,7 +814,7 @@ pbc_pattern_unpack(struct pbc_pattern *pat, struct pbc_slice *s, void * output) 
 		return 0;
 	}
 	pbc_ctx _ctx;
-	int r = _pbcC_open(_ctx, s->buffer, s->len);
+	int r = _pbcC_open(_ctx, s->buffer, s->len); // 导入切片的内容
 	if (r <= 0) {
 		pat->env->lasterror = "Pattern unpack open context error";
 		_pbcC_close(_ctx);

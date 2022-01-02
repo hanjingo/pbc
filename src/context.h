@@ -49,7 +49,7 @@ struct slice {
 	int start;
 	int end;
 };
-
+// 原子值
 struct atom {
 	int wire_id;
 	union {
@@ -57,12 +57,12 @@ struct atom {
 		struct longlong i;
 	} v;
 };
-
+// 上下文
 struct context {
-	char * buffer;
-	int size;
-	int number;
-	struct atom * a;
+	char * buffer;        // 缓冲区
+	int size;             // 缓冲区长度
+	int number;           // 编号
+	struct atom * a;      // 原子值
 };
 
 typedef struct _pbc_ctx { char _data[PBC_CONTEXT_CAP]; } pbc_ctx[1];

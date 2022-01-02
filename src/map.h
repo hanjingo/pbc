@@ -6,10 +6,10 @@
 struct map_ip;
 struct map_si;
 struct map_sp;
-
+// 键值类型map
 struct map_kv {
-	int id;
-	void *pointer;
+	int id;          // id
+	void *pointer;   // 指针
 };
 
 struct map_si * _pbcM_si_new(struct map_kv * table, int size);

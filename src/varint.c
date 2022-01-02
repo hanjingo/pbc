@@ -3,7 +3,7 @@
 #include "pbc.h"
 
 #include <stdint.h>
-
+// (varint)编码uint32到缓冲区，并返回占用的缓冲区长度
 inline int
 _pbcV_encode32(uint32_t number, uint8_t buffer[10])
 {
@@ -30,7 +30,7 @@ _pbcV_encode32(uint32_t number, uint8_t buffer[10])
 	buffer[4] = (uint8_t) (number >> 28);
 	return 5;
 }
-
+// (varint)编码unit64到缓冲区，并返回占用的缓冲区长度
 int
 _pbcV_encode(uint64_t number, uint8_t buffer[10]) 
 {
@@ -46,7 +46,7 @@ _pbcV_encode(uint64_t number, uint8_t buffer[10])
 	buffer[i] = (uint8_t)number;
 	return i+1;
 }
-
+// (varint)解码出长整型
 int
 _pbcV_decode(uint8_t buffer[10], struct longlong *result) {
 	if (!(buffer[0] & 0x80)) {
@@ -78,21 +78,21 @@ _pbcV_decode(uint8_t buffer[10], struct longlong *result) {
 	result->hi = 0;
 	return 10;
 }
-
+// (zigzag)编码int32到缓冲区
 int 
 _pbcV_zigzag32(int32_t n, uint8_t buffer[10])
 {
 	n = (n << 1) ^ (n >> 31);
 	return _pbcV_encode32(n,buffer);
 }
-
+// (zigzag)编码int64到缓冲区
 int 
 _pbcV_zigzag(int64_t n, uint8_t buffer[10])
 {
 	n = (n << 1) ^ (n >> 63);
 	return _pbcV_encode(n,buffer);
 }
-
+// (zigzag)解码int64
 void
 _pbcV_dezigzag64(struct longlong *r)
 {
@@ -100,7 +100,7 @@ _pbcV_dezigzag64(struct longlong *r)
 	r->low = ((low >> 1) | ((r->hi & 1) << 31)) ^ - (low & 1);
 	r->hi = (r->hi >> 1) ^ - (low & 1);
 }
-
+// (varint)解码int32
 void
 _pbcV_dezigzag32(struct longlong *r)
 {

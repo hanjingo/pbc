@@ -3,32 +3,32 @@
 
 #include <stdlib.h>
 #include <string.h>
-
+// id-pointer槽
 struct _pbcM_ip_slot {
-	int id;
-	void * pointer;
-	int next;
+	int id;              // id
+	void * pointer;      // 指针
+	int next;            // 指向下一个
 };
-
+// 整数映射到指针的静态哈希表（不支持扩容）
 struct map_ip {
-	size_t array_size;
-	void ** array;
-	size_t hash_size;
-	struct _pbcM_ip_slot * slot;
+	size_t array_size;             // 数组长度
+	void ** array;                 // 数组
+	size_t hash_size;              // hash长度
+	struct _pbcM_ip_slot * slot;   // id-pointer槽链表
 };
-
+// string-id槽
 struct _pbcM_si_slot {
-	const char *key;
-	size_t hash;
-	int id;
-	int next;
+	const char *key;                // string key
+	size_t hash;                    // hash长度
+	int id;                         // id
+	int next;                       // 指向下一个
 };
-
+// 字符串映射到id的静态哈希表
 struct map_si {
-	size_t size;
-	struct _pbcM_si_slot slot[1];
+	size_t size;                    // 数量
+	struct _pbcM_si_slot slot[1];   // 槽指针（[1]表示指针）
 };
-
+// 计算hash
 static size_t
 calc_hash(const char *name)
 {
@@ -40,7 +40,7 @@ calc_hash(const char *name)
 	    h = h ^ ((h<<5)+(h>>2)+(size_t)name[i-1]);
 	return h;
 }
-
+// 新建一个字符串映射到id的静态哈希表；table:键值对哈希表（用来提供初始化值）, size:键值对哈希表容量
 struct map_si *
 _pbcM_si_new(struct map_kv * table, int size)
 {
@@ -53,7 +53,7 @@ _pbcM_si_new(struct map_kv * table, int size)
 	int empty = 0;
 	int i;
 
-	for (i=0;i<size;i++) {
+	for (i=0;i<size;i++) { // 遍历并赋值
 		size_t hash_full = calc_hash((const char *)table[i].pointer);
 		size_t hash = hash_full % size;
 		struct _pbcM_si_slot * slot = &ret->slot[hash];
@@ -76,13 +76,13 @@ _pbcM_si_new(struct map_kv * table, int size)
 
 	return ret;
 }
-
+// 删除一个字符串映射到id的静态哈希表
 void 
 _pbcM_si_delete(struct map_si *map)
 {
 	free(map);
 }
-
+// 根据key查询标签序号，0表示未找到；map:待查询的序号表, key:键, result:返回的结果
 int
 _pbcM_si_query(struct map_si *map, const char *key, int *result) 
 {
@@ -104,7 +104,7 @@ _pbcM_si_query(struct map_si *map, const char *key, int *result)
 		slot = &map->slot[slot->next-1];
 	}
 }
-
+// 新建一个id-pointer map并hash化
 static struct map_ip *
 _pbcM_ip_new_hash(struct map_kv * table, int size)
 {
@@ -135,7 +135,7 @@ _pbcM_ip_new_hash(struct map_kv * table, int size)
 	}
 	return ret;
 }
-
+// 新建一个id-pointer map
 struct map_ip *
 _pbcM_ip_new(struct map_kv * table, int size)
 {
@@ -164,7 +164,7 @@ _pbcM_ip_new(struct map_kv * table, int size)
 	}
 	return ret;
 }
-
+// 删除一个id-pointer map
 void
 _pbcM_ip_delete(struct map_ip * map)
 {
@@ -174,7 +174,7 @@ _pbcM_ip_delete(struct map_ip * map)
 		free(map);
 	}
 }
-
+// 将map注入table
 static void
 _inject(struct map_kv * table, struct map_ip *map)
 {
@@ -196,7 +196,7 @@ _inject(struct map_kv * table, struct map_ip *map)
 		}
 	}
 }
-
+// 合并a和b
 struct map_ip *
 _pbcM_ip_combine(struct map_ip *a, struct map_ip *b)
 {
@@ -209,7 +209,7 @@ _pbcM_ip_combine(struct map_ip *a, struct map_ip *b)
 	free(table);
 	return r;
 }
-
+// 根据id查询id_pointer map
 void *
 _pbcM_ip_query(struct map_ip * map, int id)
 {
@@ -232,21 +232,21 @@ _pbcM_ip_query(struct map_ip * map, int id)
 		slot = &map->slot[slot->next-1];
 	}
 }
-
+// string-pointer槽
 struct _pbcM_sp_slot {
-	const char *key;
-	size_t hash;
-	void *pointer;
-	int next;
+	const char *key;     // key
+	size_t hash;         // hash
+	void *pointer;       // 数据指针
+	int next;            // 下一个
 };
-
+// 一个字符串映射到指针的动态哈希表（支持扩容，遍历，heap内存分配策略）
 struct map_sp {
-	size_t cap;
-	size_t size;
-	struct heap *heap;
-	struct _pbcM_sp_slot * slot;
+	size_t cap;                     // 容量
+	size_t size;                    // 当前数量
+	struct heap *heap;              // 用来申请内存的堆
+	struct _pbcM_sp_slot * slot;    // 槽链表
 };
-
+// 新建一个string-pointer map
 struct map_sp *
 _pbcM_sp_new(int max , struct heap *h)
 {
@@ -262,7 +262,7 @@ _pbcM_sp_new(int max , struct heap *h)
 	ret->heap = h;
 	return ret;
 }
-
+// 删除string-pointer map
 void
 _pbcM_sp_delete(struct map_sp *map)
 {
@@ -273,7 +273,7 @@ _pbcM_sp_delete(struct map_sp *map)
 }
 
 static void _pbcM_sp_rehash(struct map_sp *map);
-
+// 递归地向字符串map插入hash-value对；
 static void
 _pbcM_sp_insert_hash(struct map_sp *map, const char *key, size_t hash_full, void * value)
 {
@@ -302,14 +302,14 @@ _pbcM_sp_insert_hash(struct map_sp *map, const char *key, size_t hash_full, void
 	_pbcM_sp_rehash(map);
 	_pbcM_sp_insert_hash(map, key, hash_full, value);
 }
-
+// 重新hash化
 static void
 _pbcM_sp_rehash(struct map_sp *map) {
 	struct heap * h = map->heap;
 	struct _pbcM_sp_slot * old_slot = map->slot;
 	size_t size = map->size;
 	map->size = 0;
-	map->cap *= 2;
+	map->cap *= 2; // 容量翻倍
 	map->slot = (struct _pbcM_sp_slot *)HMALLOC(sizeof(struct _pbcM_sp_slot)*map->cap);
 	memset(map->slot,0,sizeof(struct _pbcM_sp_slot)*map->cap);
 	size_t i;
@@ -320,7 +320,7 @@ _pbcM_sp_rehash(struct map_sp *map) {
 		_pbcM_free(old_slot);
 	}
 }
-
+// 递归查询key并更新hash值
 static void **
 _pbcM_sp_query_insert_hash(struct map_sp *map, const char *key, size_t hash_full)
 {
@@ -363,19 +363,19 @@ _rehash:
 	_pbcM_sp_rehash(map);
 	return _pbcM_sp_query_insert_hash(map, key, hash_full);
 }
-
+// 向类型map插入键值对
 void
 _pbcM_sp_insert(struct map_sp *map, const char *key, void * value)
 {
 	_pbcM_sp_insert_hash(map,key,calc_hash(key),value);
 }
-
+// 查询并更新hash
 void **
 _pbcM_sp_query_insert(struct map_sp *map, const char *key)
 {
 	return _pbcM_sp_query_insert_hash(map,key,calc_hash(key));
 }
-
+// 根据key查询"字符串-指针映射map"
 void *
 _pbcM_sp_query(struct map_sp *map, const char *key)
 {
@@ -397,7 +397,7 @@ _pbcM_sp_query(struct map_sp *map, const char *key)
 		slot = &map->slot[slot->next-1];
 	}
 }
-
+// 遍历map执行函数；func:需要执行的函数
 void 
 _pbcM_sp_foreach(struct map_sp *map, void (*func)(void *p))
 {
@@ -408,7 +408,7 @@ _pbcM_sp_foreach(struct map_sp *map, void (*func)(void *p))
 		}
 	}
 }
-
+// 遍历map，提供user data来执行函数；func:需要执行的函数，ud:user data
 void 
 _pbcM_sp_foreach_ud(struct map_sp *map, void (*func)(void *p, void *ud), void *ud)
 {
@@ -419,7 +419,7 @@ _pbcM_sp_foreach_ud(struct map_sp *map, void (*func)(void *p, void *ud), void *u
 		}
 	}
 }
-
+// 查找map的第一个有效值
 static int
 _find_first(struct map_sp *map)
 {
@@ -431,7 +431,7 @@ _find_first(struct map_sp *map)
 	}
 	return -1;
 }
-
+// 查找key的下一个key
 static int
 _find_next(struct map_sp *map, const char *key)
 {
@@ -458,7 +458,7 @@ _find_next(struct map_sp *map, const char *key)
 		slot = &map->slot[slot->next-1];
 	}
 }
-
+// 查找key的下一个key（如果没找到，返回第一个key）
 void * 
 _pbcM_sp_next(struct map_sp *map, const char ** key)
 {

@@ -24,7 +24,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+// 数组（定义成只有一个元素的数组，使用时能直接用指针操作，不需要再定义一个指针，传参时传递的也是指针；）
 typedef struct _pbc_array { char _data[PBC_ARRAY_CAP]; } pbc_array[1];
 // 切片
 struct pbc_slice {
@@ -48,16 +48,16 @@ union pbc_value {
 	struct {
 		uint32_t low;
 		uint32_t hi;
-	} i;
-	double f;
-	struct pbc_slice s;
+	} i;                        // int
+	double f;                   // float
+	struct pbc_slice s;         // string
 	struct {
 		int id;
 		const char * name;
-	} e;
+	} e;                        // 
 };
 
-typedef void (*pbc_decoder)(void *ud, int type, const char * type_name, union pbc_value *v, int id, const char *key);
+typedef void (*pbc_decoder)(void *ud, int type, const char * type_name, union pbc_value *v, int id, const char *key); // 解码函数
 int pbc_decode(struct pbc_env * env, const char * type_name , struct pbc_slice * slice, pbc_decoder f, void *ud);
 
 // message api

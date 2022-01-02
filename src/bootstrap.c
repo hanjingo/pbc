@@ -48,37 +48,37 @@ message file {
 }
 
 */
-
+// message field
 struct field_t {
-	struct pbc_slice name;
-	int32_t id;
-	int32_t label;
-	int32_t type;
-	struct pbc_slice type_name;
-	int32_t default_integer;
-	struct pbc_slice default_string;
-	double default_real;
+	struct pbc_slice name;                       // 标签名
+	int32_t id;									 // 序号
+	int32_t label;							     // 关键字（1:optional, 2:required, 3:repeated）
+	int32_t type;								 // pb类型
+	struct pbc_slice type_name;                  // pb类型名
+	int32_t default_integer;                     // int类型默认值
+	struct pbc_slice default_string;             // string类型默认值
+	double default_real;                         // double类型默认值
 };
-
+// message file
 struct file_t {
-	struct pbc_slice name;	// string
-	pbc_array dependency;	// string
-	pbc_array message_name;	// string
-	pbc_array message_size;	// int32
-	pbc_array message_field;	// field_t
-	pbc_array enum_name;	// string
-	pbc_array enum_size;	// int32
-	pbc_array enum_string;	// string
-	pbc_array enum_id;	// int32
+	struct pbc_slice name;	                     // string
+	pbc_array dependency;	                     // string
+	pbc_array message_name;	                     // string
+	pbc_array message_size;	                     // int32
+	pbc_array message_field;	                 // field_t
+	pbc_array enum_name;	                     // string
+	pbc_array enum_size;	                     // int32
+	pbc_array enum_string;	                     // string
+	pbc_array enum_id;	                         // int32
 };
-
+// 设置单个枚举
 static void
 set_enum_one(struct pbc_env *p, struct file_t *file, const char *name, int start, int sz) {
 	struct map_kv *table = (struct map_kv *)malloc(sz * sizeof(struct map_kv));
 	int i;
 	for (i=0;i<sz;i++) {
-		pbc_var id;
-		pbc_var string;
+		pbc_var id;     // 序号
+		pbc_var string; // 
 		_pbcA_index(file->enum_id, start+i, id);
 		_pbcA_index(file->enum_string, start+i, string);
 		table[i].id = (int)id->integer.low;
@@ -88,22 +88,22 @@ set_enum_one(struct pbc_env *p, struct file_t *file, const char *name, int start
 
 	free(table);
 }
-
+// 设置枚举数组
 static void
 set_enums(struct pbc_env *p, struct file_t *file) {
-	int n = pbc_array_size(file->enum_size);
+	int n = pbc_array_size(file->enum_size); // 枚举长度
 	int i;
 	int start = 0;
 	for (i=0;i<n;i++) {
-		pbc_var name;
+		pbc_var name;  // 
 		_pbcA_index(file->enum_name,i,name);
-		pbc_var var;
+		pbc_var var;   // 
 		_pbcA_index(file->enum_size,i,var);
 		set_enum_one(p, file, name->s.str, start , (int)var->integer.low);
 		start += var->integer.low;
 	}
 }
-
+// 设置field的默认值；input:message field
 static void
 set_default(struct _field *f, struct field_t *input) {
 	switch (f->type) {
@@ -120,7 +120,7 @@ set_default(struct _field *f, struct field_t *input) {
 		break;
 	}
 }
-
+// 在匹配项中设置一个message; p:pbc env, file:file, name:键, start:起始位置, sz:长度, queue:队列
 static void
 set_msg_one(struct pbc_pattern * FIELD_T, struct pbc_env *p, struct file_t *file, const char *name, int start, int sz , pbc_array queue) {
 	int i;
@@ -147,7 +147,7 @@ set_msg_one(struct pbc_pattern * FIELD_T, struct pbc_env *p, struct file_t *file
 	}
 	_pbcP_init_message(p, name);
 }
-
+// 批量设置消息
 static void
 set_msgs(struct pbc_pattern * FIELD_T, struct pbc_env *p, struct file_t *file , pbc_array queue) {
 	int n = pbc_array_size(file->message_size);
@@ -162,15 +162,15 @@ set_msgs(struct pbc_pattern * FIELD_T, struct pbc_env *p, struct file_t *file , 
 		start += sz->integer.low;
 	}
 }
-
+// 设置一个message field
 static void
 set_field_one(struct pbc_env *p, struct _field *f) {
 	const char * type_name = f->type_name.n;
 	if (f->type == PTYPE_MESSAGE) {
-		f->type_name.m  = (struct _message *)_pbcM_sp_query(p->msgs, type_name);
+		f->type_name.m  = (struct _message *)_pbcM_sp_query(p->msgs, type_name); // 查类型表
 //		printf("MESSAGE: %s %p\n",type_name, f->type_name.m);
 	} else if (f->type == PTYPE_ENUM) {
-		f->type_name.e = (struct _enum *)_pbcM_sp_query(p->enums, type_name);
+		f->type_name.e = (struct _enum *)_pbcM_sp_query(p->enums, type_name); // 查枚举表
 //		printf("ENUM: %s %p ",type_name, f->type_name.e);
 		const char * str = f->default_v->s.str;
 		if (str && str[0]) {
@@ -186,7 +186,7 @@ _default:
 		}
 	}
 }
-
+// 向pbc env中注册message field队列
 void
 _pbcB_register_fields(struct pbc_env *p, pbc_array queue) {
 	int sz = pbc_array_size(queue);
@@ -198,7 +198,7 @@ _pbcB_register_fields(struct pbc_env *p, pbc_array queue) {
 		set_field_one(p, f);
 	}
 }
-
+// 初始化为string
 static void
 _set_string(struct _pattern_field * f) {
 	f->ptype = PTYPE_STRING;
@@ -206,37 +206,37 @@ _set_string(struct _pattern_field * f) {
 	f->defv->s.str = "";
 	f->defv->s.len = 0;
 }
-
+// 初始化为int32
 static void
 _set_int32(struct _pattern_field * f) {
 	f->ptype = PTYPE_INT32;
 	f->ctype = CTYPE_INT32;
 }
-
+// 初始化为double
 static void
 _set_double(struct _pattern_field * f) {
 	f->ptype = PTYPE_DOUBLE;
 	f->ctype = CTYPE_DOUBLE;
 }
-
+// 初始化为msg数组
 static void
 _set_message_array(struct _pattern_field *f) {
 	f->ptype = PTYPE_MESSAGE;
 	f->ctype = CTYPE_ARRAY;
 }
-
+// 初始化为字符串数组
 static void
 _set_string_array(struct _pattern_field * f) {
 	f->ptype = PTYPE_STRING;
 	f->ctype = CTYPE_ARRAY;
 }
-
+// 初始化为int32数组
 static void
 _set_int32_array(struct _pattern_field * f) {
 	f->ptype = PTYPE_INT32;
 	f->ctype = CTYPE_ARRAY;
 }
-
+// 设置匹配项pat；idx:索引，pat_type:匹配项名，field_name:, type:
 #define SET_PATTERN(pat , idx , pat_type, field_name , type) \
 	pat->f[idx].id = idx+1 ; \
 	pat->f[idx].offset = offsetof(struct pat_type, field_name);	\
@@ -244,7 +244,7 @@ _set_int32_array(struct _pattern_field * f) {
 
 #define F(idx,field_name,type) SET_PATTERN(FIELD_T, idx, field_t ,field_name, type)
 #define D(idx,field_name,type) SET_PATTERN(FILE_T, idx, file_t ,field_name, type)
-
+// 注册到pbc env
 static int
 register_internal(struct pbc_env * p, struct pbc_slice *slice) {
 	struct pbc_pattern * FIELD_T =  _pbcP_new(p,8);
@@ -278,7 +278,7 @@ register_internal(struct pbc_env * p, struct pbc_slice *slice) {
 		goto _return;
 	}
 
-	_pbcM_sp_insert(p->files , (const char *)file.name.buffer, NULL);
+	_pbcM_sp_insert(p->files , (const char *)file.name.buffer, NULL); // 初始化files
 
 	pbc_array queue;
 	_pbcA_open(queue);
@@ -291,11 +291,11 @@ register_internal(struct pbc_env * p, struct pbc_slice *slice) {
 	pbc_pattern_close_arrays(FILE_T, &file);
 
 _return:
-	free(FIELD_T);
-	free(FILE_T);
+	free(FIELD_T); // 释放field
+	free(FILE_T);  // 释放file
 	return ret;
 }
-
+// 初始化pbc
 void 
 _pbcB_init(struct pbc_env * p) {
 	struct pbc_slice slice = { pbc_descriptor,sizeof(pbc_descriptor) };

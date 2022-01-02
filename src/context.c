@@ -11,7 +11,7 @@
 #endif
 
 #define INNER_ATOM ((PBC_CONTEXT_CAP - sizeof(struct context)) / sizeof(struct atom))
-
+// 解析wire type类型
 static char * 
 wiretype_decode(uint8_t *buffer, int cap , struct atom *a , int start)
 {
@@ -29,7 +29,7 @@ wiretype_decode(uint8_t *buffer, int cap , struct atom *a , int start)
 			return NULL;
 	}
 
-	int wiretype = r.low & 7;
+	int wiretype = r.low & 7; // 11100000...
 	a->wire_id = r.low;
 	buffer += len;
 	start += len;
@@ -83,7 +83,7 @@ wiretype_decode(uint8_t *buffer, int cap , struct atom *a , int start)
 		return NULL;
 	}
 }
-
+// 解码
 static inline int
 _decode_varint(uint8_t * buffer, int size , struct atom * a) {
 	a->wire_id = WT_VARINT;
@@ -95,7 +95,7 @@ _decode_varint(uint8_t * buffer, int size , struct atom * a) {
 		return _pbcV_decode(buffer , &(a->v.i));
 	}
 }
-
+// 拆varint包；ctx:输出上下文，buffer:varint缓冲区，size:缓冲区长度
 static int
 _open_packed_varint(struct context * ctx , uint8_t * buffer, int size) {
 	struct atom * a = (struct atom *)(ctx + 1);
@@ -133,7 +133,7 @@ _open_packed_varint(struct context * ctx , uint8_t * buffer, int size) {
 
 	return i;
 }
-
+// 打开已打包的上下文数据
 int 
 _pbcC_open_packed(pbc_ctx _ctx, int ptype, void *buffer, int size) {
 	struct context * ctx = (struct context *)_ctx;
@@ -213,7 +213,7 @@ _pbcC_open_packed(pbc_ctx _ctx, int ptype, void *buffer, int size) {
 
 	return ctx->number;
 }
-
+// 打开上下文
 int 
 _pbcC_open(pbc_ctx _ctx , void *buffer, int size) {
 	struct context * ctx = (struct context *)_ctx;
@@ -269,7 +269,7 @@ _pbcC_open(pbc_ctx _ctx , void *buffer, int size) {
 	return i;
 }
 
-
+// 关闭上下文
 void 
 _pbcC_close(pbc_ctx _ctx) {
 	struct context * ctx = (struct context *)_ctx;

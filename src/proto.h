@@ -19,26 +19,26 @@ struct _enum;
 #define LABEL_REQUIRED 1
 #define LABEL_REPEATED 2
 #define LABEL_PACKED 3
-
+// message field
 struct _field {
-	int id;
-	const char *name;
-	int type;
-	int label;
-	pbc_var default_v;
+	int id;                     // 序号
+	const char *name;           // 标签名
+	int type;                   // 类型
+	int label;                  // 关键字属性
+	pbc_var default_v;          // 默认值
 	union {
 		const char * n;
 		struct _message * m;
 		struct _enum * e;
-	} type_name;
+	} type_name;                // 类型名
 };
-
+// message
 struct _message {
-	const char * key;
-	struct map_ip * id;	// id -> _field
-	struct map_sp * name;	// string -> _field
-	struct pbc_rmessage * def;	// default message
-	struct pbc_env * env;
+	const char * key;           // 
+	struct map_ip * id;	        // id -> _field
+	struct map_sp * name;	    // string -> _field
+	struct pbc_rmessage * def;	// 默认值
+	struct pbc_env * env;       // 
 };
 
 struct _enum {
@@ -47,12 +47,12 @@ struct _enum {
 	struct map_si * name;
 	pbc_var default_v;
 };
-
+// pbc env
 struct pbc_env {
-	struct map_sp * files;	// string -> void *
-	struct map_sp * enums;	// string -> _enum
-	struct map_sp * msgs;	// string -> _message
-	const char * lasterror;
+	struct map_sp * files;	    // string -> void *
+	struct map_sp * enums;	    // 枚举map；key:类型名, value:_enum 
+	struct map_sp * msgs;	    // 类型map；key:类型名, value:_message
+	const char * lasterror;     // 
 };
 
 struct _message * _pbcP_init_message(struct pbc_env * p, const char *name);
