@@ -279,7 +279,7 @@ _pbcP_unpack_packed(uint8_t *buffer, int size, int ptype, pbc_array array) {
 	}
 	return -1;
 }
-// 解析域；ctype:, ptype:, buffer:, a:, out:
+// 解析域；ctype:C语言类型, ptype:protobuf类型, buffer:缓冲区, a:原子, out:输出结果
 static int
 unpack_field(int ctype, int ptype, char * buffer, struct atom * a, void *out) {
 	if (ctype == CTYPE_ARRAY) {
@@ -337,7 +337,7 @@ unpack_field(int ctype, int ptype, char * buffer, struct atom * a, void *out) {
 	}
 	return -1;
 }
-
+// 解包数组
 static int 
 unpack_array(int ptype, char *buffer, struct atom * a, pbc_array _array) {
 	pbc_var var;
@@ -348,7 +348,7 @@ unpack_array(int ptype, char *buffer, struct atom * a, pbc_array _array) {
 
 	return 0;
 }
-// 关闭匹配项的数组
+// 遍历关闭匹配项的数组
 void 
 pbc_pattern_close_arrays(struct pbc_pattern *pat, void * data) {
 	int i;
@@ -359,7 +359,7 @@ pbc_pattern_close_arrays(struct pbc_pattern *pat, void * data) {
 		}
 	}
 }
-
+// 封包wiretype; wt:入参, s:出参
 static inline int
 _pack_wiretype(uint32_t wt, struct pbc_slice *s) {
 	int len;
@@ -376,7 +376,7 @@ _pack_wiretype(uint32_t wt, struct pbc_slice *s) {
 	s->len -= len;
 	return len;
 }
-
+// (varint)封包uint64
 static inline int
 _pack_varint64(uint64_t i64, struct pbc_slice *s) {
 	int len;
@@ -393,7 +393,7 @@ _pack_varint64(uint64_t i64, struct pbc_slice *s) {
 	s->len -= len;
 	return len;
 }
-
+// (zigzag)封包uint32
 static inline int
 _pack_sint32(uint32_t v, struct pbc_slice *s) {
 	int len;
@@ -410,7 +410,7 @@ _pack_sint32(uint32_t v, struct pbc_slice *s) {
 	s->len -= len;
 	return len;
 }
-
+// (zigzag)封包uint64
 static inline int
 _pack_sint64(uint64_t v, struct pbc_slice *s) {
 	int len;
@@ -427,7 +427,7 @@ _pack_sint64(uint64_t v, struct pbc_slice *s) {
 	s->len -= len;
 	return len;
 }
-
+// (填充)编码uint32
 static inline void
 _fix32_encode(uint32_t v , uint8_t *buffer) {
 	buffer[0] = (uint8_t) v;
@@ -435,13 +435,13 @@ _fix32_encode(uint32_t v , uint8_t *buffer) {
 	buffer[2] = (uint8_t) (v >> 16);
 	buffer[3] = (uint8_t) (v >> 24);
 }
-
+// (填充)编码长整型
 static inline void
 _fix64_encode(struct longlong *v , uint8_t *buffer) {
 	_fix32_encode(v->low , buffer);
 	_fix32_encode(v->hi, buffer + 4);
 }
-
+// 打包number类型数据，并返回字节长; ptype:protobuf类型, ctype:C语言类型, s:输出值, input:输入参数
 static int
 _pack_number(int ptype , int ctype , struct pbc_slice *s, void *input) {
 	pbc_var var;
@@ -527,7 +527,7 @@ _pack_number(int ptype , int ctype , struct pbc_slice *s, void *input) {
 		return -1;
 	}
 }
-
+// 打包field; ctype:C语言类型, s:出参, input:入参
 static int
 _pack_field(struct _pattern_field *pf , int ctype, struct pbc_slice *s, void *input) {
 	int wiretype;
@@ -611,7 +611,7 @@ _number:
 
 	return ret;
 }
-
+// 打包repeated字段；s:出参, array:入参
 static int 
 _pack_repeated(struct _pattern_field *pf , struct pbc_slice *s, pbc_array array) {
 	int n = pbc_array_size(array);
@@ -627,7 +627,7 @@ _pack_repeated(struct _pattern_field *pf , struct pbc_slice *s, pbc_array array)
 	}
 	return ret;
 }
-
+// 打包已封装的fixed类型; width:, s:出参, array:已封装的入参
 static int
 _pack_packed_fixed(struct _pattern_field *pf , int width, struct pbc_slice *s, pbc_array array) {
 	int len;
@@ -645,7 +645,7 @@ _pack_packed_fixed(struct _pattern_field *pf , int width, struct pbc_slice *s, p
 
 	return len + n * width;
 }
-
+// 打包已封装(varint)的数组; slice:出参, array:已封装的入参
 static int
 _pack_packed_varint(struct _pattern_field *pf , struct pbc_slice *slice, pbc_array array) {
 	struct pbc_slice s = * slice;
@@ -683,7 +683,7 @@ _pack_packed_varint(struct _pattern_field *pf , struct pbc_slice *slice, pbc_arr
 	slice->len -= packed_len + header_len;
 	return packed_len + header_len;
 }
-
+// 打包已封装的数据; s:出参, array:入参
 static int 
 _pack_packed(struct _pattern_field *pf , struct pbc_slice *s, pbc_array array) {
 	int n = pbc_array_size(array);
@@ -730,7 +730,7 @@ _pack_packed(struct _pattern_field *pf , struct pbc_slice *s, pbc_array array) {
 
 	return ret;
 }
-
+// 判断当前值是否为默认值; in:默认参考值
 static bool
 _is_default(struct _pattern_field * pf, void * in) {
 	switch (pf->ctype) {
@@ -772,7 +772,7 @@ _is_default(struct _pattern_field * pf, void * in) {
 
 	return false;
 }
-
+// (pattern)打包
 int 
 pbc_pattern_pack(struct pbc_pattern *pat, void *input, struct pbc_slice * s)
 {
@@ -932,7 +932,7 @@ _ctype_size(const char *ctype) {
 		return 0;
 	}
 }
-
+// 复制字符串; format:格式化字符串, temp:字符串数组
 static const char *
 _copy_string(const char *format , char ** temp) {
 	char * output = *temp;
@@ -954,7 +954,7 @@ _copy_string(const char *format , char ** temp) {
 
 	return format;
 }
-
+// ？？
 static int
 _scan_pattern(const char * format , char * temp) {
 	int n = 0;
@@ -968,7 +968,7 @@ _scan_pattern(const char * format , char * temp) {
 			return n;
 	} 
 }
-
+// 对比a和b的id
 static int 
 _comp_field(const void * a, const void * b) {
 	const struct _pattern_field * fa = (const struct _pattern_field *)a;
@@ -976,7 +976,7 @@ _comp_field(const void * a, const void * b) {
 
 	return fa->id - fb->id;
 }
-
+// 新建一个pattern结构
 struct pbc_pattern *
 _pbcP_new(struct pbc_env * env, int n) {
 	size_t sz = sizeof(struct pbc_pattern) + (sizeof(struct _pattern_field)) * (n-1);
@@ -986,7 +986,7 @@ _pbcP_new(struct pbc_env * env, int n) {
 	ret->env = env;
 	return ret;
 }
-
+// 检查f的类型是否正确
 static int
 _check_ctype(struct _field * field, struct _pattern_field *f) {
 	if (field->label == LABEL_REPEATED) {
@@ -1012,7 +1012,7 @@ _check_ctype(struct _field * field, struct _pattern_field *f) {
 	return f->ctype == CTYPE_VAR || f->ctype == CTYPE_ARRAY || f->ctype == CTYPE_PACKED ||
 		f->ctype == CTYPE_DOUBLE || f->ctype == CTYPE_FLOAT;
 }
-
+// 新建一个pattern
 struct pbc_pattern *
 _pattern_new(struct _message *m, const char *format) {
 	int len = strlen(format);
@@ -1064,7 +1064,7 @@ _error:
 	free(pat);
 	return NULL;
 }
-
+// 新建一个pattern
 struct pbc_pattern * 
 pbc_pattern_new(struct pbc_env * env , const char * message, const char * format, ... ) {
 	struct _message *m = _pbcP_get_message(env, message);

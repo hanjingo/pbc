@@ -40,12 +40,12 @@ struct _message {
 	struct pbc_rmessage * def;	// 默认值
 	struct pbc_env * env;       // 
 };
-
+// enum
 struct _enum {
-	const char * key;
-	struct map_ip * id;
-	struct map_si * name;
-	pbc_var default_v;
+	const char * key;           // 
+	struct map_ip * id;         // 
+	struct map_si * name;       // 
+	pbc_var default_v;          // 默认值
 };
 // pbc env
 struct pbc_env {

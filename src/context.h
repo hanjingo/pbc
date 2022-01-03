@@ -44,10 +44,10 @@
 #define PTYPE_SFIXED64 16
 #define PTYPE_SINT32   17  // Uses ZigZag encoding.
 #define PTYPE_SINT64   18  // Uses ZigZag encoding.
-
+// 切片
 struct slice {
-	int start;
-	int end;
+	int start;             // 开始
+	int end;               // 结束
 };
 // 原子值
 struct atom {
@@ -70,7 +70,7 @@ typedef struct _pbc_ctx { char _data[PBC_CONTEXT_CAP]; } pbc_ctx[1];
 int _pbcC_open(pbc_ctx , void *buffer, int size);	// <=0 failed
 int _pbcC_open_packed(pbc_ctx _ctx, int ptype, void *buffer, int size);
 void _pbcC_close(pbc_ctx);
-
+// 从atom中解码double
 static inline double
 read_double(struct atom * a) {
 	union {
@@ -80,7 +80,7 @@ read_double(struct atom * a) {
 	u.i = (uint64_t) a->v.i.low | (uint64_t) a->v.i.hi << 32;
 	return u.d;
 }
-
+// 从atom中解码float
 static inline float
 read_float(struct atom * a) {
 	union {
@@ -90,7 +90,7 @@ read_float(struct atom * a) {
 	u.i = a->v.i.low;
 	return u.f;
 }
-
+// 编码double
 static inline void
 double_encode(double v , uint8_t * buffer) {
 	union {
@@ -107,7 +107,7 @@ double_encode(double v , uint8_t * buffer) {
 	buffer[6] = (uint8_t) (u.e >> 48 & 0xff);
 	buffer[7] = (uint8_t) (u.e >> 56 & 0xff);
 }
-
+// 编码float
 static inline void
 float_encode(float v , uint8_t * buffer) {
 	union {

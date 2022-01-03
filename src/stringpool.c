@@ -19,7 +19,7 @@ _pbcS_new(void) {
 	ret->next = NULL;
 	return ret;
 }
-
+// 释放string池
 void 
 _pbcS_delete(struct _stringpool *pool) {
 	while(pool) {

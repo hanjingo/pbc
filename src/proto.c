@@ -8,19 +8,19 @@
 
 #include <stdlib.h>
 #include <string.h>
-
+// 返回最后一次错误
 const char * 
 pbc_error(struct pbc_env * p) {
 	const char *err = p->lasterror;
 	p->lasterror = "";
 	return err;
 }
-
+// 根据name查询message
 struct _message * 
 _pbcP_get_message(struct pbc_env * p , const char *name) {
 	return (struct _message *)_pbcM_sp_query(p->msgs, name);
 }
-
+// 新建pbc env
 struct pbc_env * 
 pbc_new(void) {
 	struct pbc_env * p = (struct pbc_env *)malloc(sizeof(*p));
@@ -33,7 +33,7 @@ pbc_new(void) {
 
 	return p;
 }
-
+// 删除enum
 static void
 free_enum(void *p) {
 	struct _enum * e = (struct _enum *)p;
@@ -42,12 +42,12 @@ free_enum(void *p) {
 
 	free(p);
 }
-
+// 释放string池 
 static void
 free_stringpool(void *p) {
 	_pbcS_delete((struct _stringpool *)p);
 }
-
+// 释放message类型
 static void
 free_msg(void *p) {
 	struct _message * m = (struct _message *)p;
@@ -58,7 +58,7 @@ free_msg(void *p) {
 	_pbcM_sp_delete(m->name);
 	free(p);
 }
-
+// 删除pbc env
 void 
 pbc_delete(struct pbc_env *p) {
 	_pbcM_sp_foreach(p->enums, free_enum);
@@ -72,7 +72,7 @@ pbc_delete(struct pbc_env *p) {
 
 	free(p);
 }
-
+// 将enum插入map
 struct _enum *
 _pbcP_push_enum(struct pbc_env * p, const char *name, struct map_kv *table, int sz) {
 	void * check = _pbcM_sp_query(p->enums, name);
@@ -88,7 +88,7 @@ _pbcP_push_enum(struct pbc_env * p, const char *name, struct map_kv *table, int 
 	_pbcM_sp_insert(p->enums, name , v);
 	return v;
 }
-// 将一条信息推入队列；p:pbc_env, name:键, f:message field, queue: 队列
+// 将一条message推入队列；p:pbc_env, name:键, f:message field, queue: 队列
 void 
 _pbcP_push_message(struct pbc_env * p, const char *name, struct _field *f , pbc_array queue) {
 	struct _message * m = (struct _message *)_pbcM_sp_query(p->msgs, name);
@@ -110,18 +110,18 @@ _pbcP_push_message(struct pbc_env * p, const char *name, struct _field *f , pbc_
 		_pbcA_push(queue, atom);
 	}
 }
-
+// 迭代器
 struct _iter {
-	int count;
-	struct map_kv * table;
+	int count;             // table熟练
+	struct map_kv * table; // kv map
 };
-
+// table数量+1
 static void
 _count(void *p, void *ud) {
 	struct _iter *iter = (struct _iter *)ud;
 	iter->count ++;
 }
-
+// 将p存入迭代器的table
 static void
 _set_table(void *p, void *ud) {
 	struct _field * field = (struct _field *)p;
@@ -130,7 +130,7 @@ _set_table(void *p, void *ud) {
 	iter->table[iter->count].pointer = field;
 	++iter->count;
 }
-
+// 初始化message
 struct _message * 
 _pbcP_init_message(struct pbc_env * p, const char *name) {
 	struct _message * m = (struct _message *)_pbcM_sp_query(p->msgs, name);
@@ -161,7 +161,7 @@ _pbcP_init_message(struct pbc_env * p, const char *name) {
 
 	return m;
 }
-
+// 获取message的默认值，并返回其类型；name:key, defv:要输出的默认值
 int 
 _pbcP_message_default(struct _message * m, const char * name, pbc_var defv) {
 	struct _field * f= (struct _field *)_pbcM_sp_query(m->name, name);
@@ -237,7 +237,7 @@ _pbcP_type(struct _field * field, const char ** type) {
 
 	return ret;
 }
-
+// 返回protobuf的类型
 int 
 pbc_type(struct pbc_env * p, const char * type_name , const char * key , const char ** type) {
 	struct _message *m = _pbcP_get_message(p, type_name);
@@ -250,7 +250,7 @@ pbc_type(struct pbc_env * p, const char * type_name , const char * key , const c
 	struct _field * field = (struct _field *)_pbcM_sp_query(m->name, key);
 	return _pbcP_type(field, type);
 }
-
+// 返回enum id
 int
 pbc_enum_id(struct pbc_env *env, const char *enum_type, const char *enum_name) {
 	struct _enum *enum_map = (struct _enum *)_pbcM_sp_query(env->enums, enum_type);
