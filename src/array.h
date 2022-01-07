@@ -4,7 +4,7 @@
 #include "varint.h"
 #include "pbc.h"
 #include "alloc.h"
-
+// 变量联合体
 typedef union _pbc_var {
 	struct longlong integer; // 长整型
 	double real;             // 浮点型

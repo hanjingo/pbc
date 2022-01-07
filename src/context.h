@@ -46,8 +46,8 @@
 #define PTYPE_SINT64   18  // Uses ZigZag encoding.
 // 切片
 struct slice {
-	int start;             // 开始
-	int end;               // 结束
+	int start;             // 开始位置
+	int end;               // 结束位置
 };
 // 原子值
 struct atom {

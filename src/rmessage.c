@@ -8,24 +8,24 @@
 
 #include <stddef.h>
 #include <string.h>
-
+// rmessage
 struct pbc_rmessage {
-		struct _message * msg;
-		struct map_sp * index;	// key -> struct value *
-		struct heap * heap;
+		struct _message * msg;   // message类型 
+		struct map_sp * index;   // 索引值
+		struct heap * heap;      // 所属堆 
 };
-
+// 变量
 union _var {
-	pbc_var var;
-	pbc_array array;
-	struct pbc_rmessage message;
+	pbc_var var;                 // 单个变量
+	pbc_array array;             // 变量数组 
+	struct pbc_rmessage message; // rmessage
 } ;
-
+// 值
 struct value {
-	struct _field * type;
-	union _var v;
+	struct _field * type;        // protobuf message field定义
+	union _var v;                // 变量值
 };
-
+// 返回rmessage的key下一个key的类型; 
 int 
 pbc_rmessage_next(struct pbc_rmessage *m, const char **key) {
 	struct value * v = (struct value *)_pbcM_sp_next(m->index, key);
@@ -35,13 +35,13 @@ pbc_rmessage_next(struct pbc_rmessage *m, const char **key) {
 	return _pbcP_type(v->type, NULL);
 }
 
-#define SIZE_VAR (offsetof(struct value, v) + sizeof(pbc_var))
-#define SIZE_ARRAY (offsetof(struct value, v) + sizeof(pbc_array))
-#define SIZE_MESSAGE (offsetof(struct value, v) + sizeof(struct pbc_rmessage))
-
+#define SIZE_VAR (offsetof(struct value, v) + sizeof(pbc_var))                  // var类型数据的size
+#define SIZE_ARRAY (offsetof(struct value, v) + sizeof(pbc_array))              // array类型数据的size
+#define SIZE_MESSAGE (offsetof(struct value, v) + sizeof(struct pbc_rmessage))  // message类型数据的size
+// 读缓冲区字符串并直接返回; h:堆, a:要读取的缓冲区范围原子值, f:?, buffer:缓冲区
 static struct value *
 read_string(struct heap *h, struct atom *a,struct _field *f, uint8_t *buffer) {
-	const char * temp = (const char *) (buffer + a->v.s.start);
+	const char * temp = (const char *) (buffer + a->v.s.start); // 取开始位置
 	int len = a->v.s.end - a->v.s.start;
 
 	if (len > 0 && temp[len-1] == '\0') {
@@ -58,7 +58,7 @@ read_string(struct heap *h, struct atom *a,struct _field *f, uint8_t *buffer) {
 		return v;
 	}
 }
-
+// 读缓冲区字符串并通过参数返回; h:堆, var:返回参数, a:要读取的缓冲区范围原子值, f:?, buffer:缓冲区
 static void
 read_string_var(struct heap *h, pbc_var var,struct atom *a,struct _field *f,uint8_t *buffer) {
 	const char * temp = (const char *) (buffer + a->v.s.start);
@@ -80,7 +80,7 @@ read_string_var(struct heap *h, pbc_var var,struct atom *a,struct _field *f,uint
 }
 
 static void _pbc_rmessage_new(struct pbc_rmessage * ret , struct _message * type ,  void *buffer, int size, struct heap *h);
-
+// 读缓冲区并转换为value返回; h:堆, f:pb field, a:缓冲区长度原子值, buffer:缓冲区
 static struct value *
 read_value(struct heap *h, struct _field *f, struct atom * a, uint8_t *buffer) {
 	struct value * v;
@@ -158,7 +158,7 @@ read_value(struct heap *h, struct _field *f, struct atom * a, uint8_t *buffer) {
 	v->type = f;
 	return v;
 }
-
+// 解包已封装的数据为变量并存到array; type:pb类型, array:接收返回的数组, f:pb field, aa:缓冲区范围原子值, buffer:缓冲区
 static void
 push_value_packed(struct _message * type, pbc_array array, struct _field *f, struct atom * aa, uint8_t *buffer) {
 	int n = _pbcP_unpack_packed((uint8_t *)buffer + aa->v.s.start, aa->v.s.end - aa->v.s.start,
@@ -178,7 +178,7 @@ push_value_packed(struct _message * type, pbc_array array, struct _field *f, str
 		}
 	}
 }
-
+// 解包数据到array; 
 static void
 push_value_array(struct heap *h, pbc_array array, struct _field *f, struct atom * a, uint8_t *buffer) {
 	pbc_var v;
@@ -241,7 +241,7 @@ push_value_array(struct heap *h, pbc_array array, struct _field *f, struct atom 
 
 	_pbcA_push(array,v);
 }
-
+// 新建rmessage; ret:返回的rmessage, type:message类型, buffer:缓冲区, size:缓冲区长度, h:堆
 static void
 _pbc_rmessage_new(struct pbc_rmessage * ret , struct _message * type , void *buffer, int size , struct heap *h) {
 	if (size == 0) {
@@ -306,7 +306,7 @@ _pbc_rmessage_new(struct pbc_rmessage * ret , struct _message * type , void *buf
 
 	_pbcC_close(_ctx);
 }
-
+// 生成新的rmessage; env:, type_name:message类型, slice:
 struct pbc_rmessage * 
 pbc_rmessage_new(struct pbc_env * env, const char * type_name ,  struct pbc_slice * slice) {
 	struct _message * msg = _pbcP_get_message(env, type_name);
@@ -333,7 +333,7 @@ pbc_rmessage_delete(struct pbc_rmessage * m) {
 		_pbcH_delete(m->heap);
 	}
 }
-
+// 获取rmessage中key/index对应的类型为string的值并返回；key:键, index:索引, sz:string的长度返回值
 const char * 
 pbc_rmessage_string(struct pbc_rmessage * m , const char *key , int index, int *sz) {
 	struct value * v = (struct value *)_pbcM_sp_query(m->index,key);
@@ -366,7 +366,7 @@ pbc_rmessage_string(struct pbc_rmessage * m , const char *key , int index, int *
 	}
 	return var->s.str;
 }
-
+// 获取rmessage中key/index对应的类型为uint32的值并返回；key:键, index:索引, hi:需要返回的高位
 uint32_t 
 pbc_rmessage_integer(struct pbc_rmessage *m , const char *key , int index, uint32_t *hi) {
 	struct value * v = (struct value *)_pbcM_sp_query(m->index,key);
@@ -412,7 +412,7 @@ pbc_rmessage_real(struct pbc_rmessage * m, const char *key , int index) {
 	return var->real;
 }
 
-
+// 获取rmessage中key/index对应的message并返回；rm:rmessage, key:键, index:索引
 struct pbc_rmessage * 
 pbc_rmessage_message(struct pbc_rmessage * rm, const char *key, int index) {
 	struct value * v = (struct value *)_pbcM_sp_query(rm->index,key);
@@ -440,7 +440,7 @@ pbc_rmessage_message(struct pbc_rmessage * rm, const char *key, int index) {
 		}
 	}
 }
-
+// 获取rmessage中key对应的数组的长度
 int 
 pbc_rmessage_size(struct pbc_rmessage *m, const char *key) {
 	struct value * v = (struct value *)_pbcM_sp_query(m->index,key);

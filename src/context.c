@@ -213,7 +213,7 @@ _pbcC_open_packed(pbc_ctx _ctx, int ptype, void *buffer, int size) {
 
 	return ctx->number;
 }
-// 打开上下文
+// 读取并解析buffer到ctx; ctx:上下文, buffer:缓冲区, size:需要读取的buffer长度
 int 
 _pbcC_open(pbc_ctx _ctx , void *buffer, int size) {
 	struct context * ctx = (struct context *)_ctx;

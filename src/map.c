@@ -246,7 +246,7 @@ struct map_sp {
 	struct heap *heap;              // 用来申请内存的堆
 	struct _pbcM_sp_slot * slot;    // 槽链表
 };
-// 新建一个string-pointer map
+// 新建一个容量为max的string-pointer map
 struct map_sp *
 _pbcM_sp_new(int max , struct heap *h)
 {
@@ -363,7 +363,7 @@ _rehash:
 	_pbcM_sp_rehash(map);
 	return _pbcM_sp_query_insert_hash(map, key, hash_full);
 }
-// 向类型map插入键值对
+// 向类型map插入键值对; key:键, value:值
 void
 _pbcM_sp_insert(struct map_sp *map, const char *key, void * value)
 {
@@ -375,7 +375,7 @@ _pbcM_sp_query_insert(struct map_sp *map, const char *key)
 {
 	return _pbcM_sp_query_insert_hash(map,key,calc_hash(key));
 }
-// 根据key查询"字符串-指针映射map"
+// 根据key查询"字符串-指针映射map"并返回；
 void *
 _pbcM_sp_query(struct map_sp *map, const char *key)
 {

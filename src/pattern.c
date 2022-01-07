@@ -136,7 +136,7 @@ write_integer(int ctype, struct atom *a, void *out) {
 }
 
 static int unpack_array(int ptype, char *buffer, struct atom *, pbc_array _array);
-// 解包；buffer:待解析的缓冲区, size:缓冲区长度, ptype:protobuf元素类型, array:用来输出结果的数组
+// 解包已封装的数据到array；buffer:待解析的缓冲区, size:缓冲区长度, ptype:protobuf元素类型, array:用来输出结果的数组
 int
 _pbcP_unpack_packed(uint8_t *buffer, int size, int ptype, pbc_array array) {
 	pbc_var var;

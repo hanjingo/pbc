@@ -12,7 +12,7 @@
 #ifdef _MSC_VER
 #define strtoll _strtoi64
 #endif
-// 组合前缀,name和'\0'；prefix:前缀, prefix_sz:前缀长度, name:name, name_sz:name长度, sz:前缀长度+name长度+1
+// 组合前缀,name和结束符并返回；prefix:前缀, prefix_sz:前缀长度, name:name, name_sz:name长度, sz:前缀长度+name长度+1
 static const char *
 _concat_name(struct _stringpool *p , const char *prefix ,  int prefix_sz , const char *name , int name_sz, int *sz) {
 	if (prefix_sz == 0) {
@@ -126,7 +126,7 @@ _set_default(struct _stringpool *pool, struct _field *f , int ptype, const char 
 		break;
 	}
 }
-// 注册field
+// 注册field；field:域, f:传出值, pool:string池
 static void
 _register_field(struct pbc_rmessage * field, struct _field * f, struct _stringpool *pool) {
 	f->id = pbc_rmessage_integer(field, "number", 0 , 0);
@@ -144,7 +144,7 @@ _register_field(struct pbc_rmessage * field, struct _field * f, struct _stringpo
 	const char * default_value = pbc_rmessage_string(field, "default_value", 0 , &vsz);
 	_set_default(pool , f , f->type, default_value , vsz);
 }
-// 注册extension
+// 注册extension；pool:string池, prefix:前缀, prefix_sz:前缀长度, msg:入参, queue:出参队列
 static void
 _register_extension(struct pbc_env *p, struct _stringpool *pool , const char * prefix, int prefix_sz, struct pbc_rmessage * msg, pbc_array queue) {
 	int extension_count = pbc_rmessage_size(msg , "extension");
@@ -176,7 +176,7 @@ _register_extension(struct pbc_env *p, struct _stringpool *pool , const char * p
 	}
 	_pbcP_init_message(p, last+1);
 }
-// 注册message
+// 注册message；pool:字符串池, message_type:message类型, prefix:前缀, prefix_sz:前缀长度, queue:存储返回message的队列
 static void
 _register_message(struct pbc_env *p, struct _stringpool *pool, struct pbc_rmessage * message_type, const char *prefix, int prefix_sz, pbc_array queue) {
 	int name_sz;
@@ -191,7 +191,7 @@ _register_message(struct pbc_env *p, struct _stringpool *pool, struct pbc_rmessa
 		struct _field f;
 		int field_name_sz;
 		const char * field_name = pbc_rmessage_string(field, "name", 0 , &field_name_sz);
-		f.name = _pbcS_build(pool,field_name,field_name_sz);
+		f.name = _pbcS_build(pool,field_name,field_name_sz); // 生成并存档name
 
 		_register_field(field, &f , pool);
 
@@ -204,7 +204,7 @@ _register_message(struct pbc_env *p, struct _stringpool *pool, struct pbc_rmessa
 
 	// nested enum
 
-	int enum_count = pbc_rmessage_size(message_type, "enum_type");
+	int enum_count = pbc_rmessage_size(message_type, "enum_type"); // 获取枚举的成员数量
 
 	for (i=0;i<enum_count;i++) {
 		struct pbc_rmessage * enum_type = pbc_rmessage_message(message_type, "enum_type", i);
@@ -212,13 +212,13 @@ _register_message(struct pbc_env *p, struct _stringpool *pool, struct pbc_rmessa
 	}
 	
 	// nested type
-	int message_count = pbc_rmessage_size(message_type, "nested_type");
+	int message_count = pbc_rmessage_size(message_type, "nested_type"); // 获取集合类的成员数量
 	for (i=0;i<message_count;i++) {
 		struct pbc_rmessage * nested_type = pbc_rmessage_message(message_type, "nested_type", i);
 		_register_message(p, pool, nested_type, temp, sz, queue);
 	}
 }
-// 
+// 注册rmessage file；file:rmessage file, pool:字符串池
 static void
 _register(struct pbc_env *p, struct pbc_rmessage * file, struct _stringpool *pool) {
 	int package_sz;
@@ -248,10 +248,10 @@ _register(struct pbc_env *p, struct pbc_rmessage * file, struct _stringpool *poo
 	_pbcA_close(queue);
 }
 
-#define CHECK_FILE_OK 0
-#define CHECK_FILE_EXIST 1
-#define CHECK_FILE_DEPENDENCY 2
-// 检查文件名
+#define CHECK_FILE_OK 0          // 通过
+#define CHECK_FILE_EXIST 1       // 文件已存在
+#define CHECK_FILE_DEPENDENCY 2  // 依赖缺失
+// 检查文件名; file:rmessage file, fname:返回文件名
 static int
 _check_file_name(struct pbc_env * p , struct pbc_rmessage * file, const char ** fname) {
 	const char * filename = pbc_rmessage_string(file, "name", 0, NULL);
@@ -273,7 +273,7 @@ _check_file_name(struct pbc_env * p , struct pbc_rmessage * file, const char ** 
 
 	return CHECK_FILE_OK;
 }
-// 无依赖注册
+// 无依赖注册rmessage file，并返回缺失的依赖文件数量; files:rmessage file数组, n:数组容量
 static int
 _register_no_dependency(struct pbc_env * p,struct pbc_rmessage ** files , int n ) {
 	int r = 0;
@@ -301,7 +301,7 @@ _register_no_dependency(struct pbc_env * p,struct pbc_rmessage ** files , int n 
 	}
 	return r;
 }
-// 注册入口
+// 对外的注册入口；
 int
 pbc_register(struct pbc_env * p, struct pbc_slice *slice) {
 	struct pbc_rmessage * message = pbc_rmessage_new(p, "google.protobuf.FileDescriptorSet", slice);

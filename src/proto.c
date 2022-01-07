@@ -8,7 +8,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-// 返回最后一次错误
+// 返回最后一次错误信息
 const char * 
 pbc_error(struct pbc_env * p) {
 	const char *err = p->lasterror;
@@ -33,7 +33,7 @@ pbc_new(void) {
 
 	return p;
 }
-// 删除enum
+// 释放enum占用的内存
 static void
 free_enum(void *p) {
 	struct _enum * e = (struct _enum *)p;
@@ -130,7 +130,7 @@ _set_table(void *p, void *ud) {
 	iter->table[iter->count].pointer = field;
 	++iter->count;
 }
-// 初始化message
+// 初始化name对应的message并返回; p:pbc_env, name:message name
 struct _message * 
 _pbcP_init_message(struct pbc_env * p, const char *name) {
 	struct _message * m = (struct _message *)_pbcM_sp_query(p->msgs, name);
@@ -157,7 +157,7 @@ _pbcP_init_message(struct pbc_env * p, const char *name) {
 
 	m->id = _pbcM_ip_new(iter.table , iter.count);
 
-	free(iter.table);
+	free(iter.table); // 释放迭代器
 
 	return m;
 }
@@ -174,7 +174,7 @@ _pbcP_message_default(struct _message * m, const char * name, pbc_var defv) {
 	*defv = *(f->default_v);
 	return f->type;
 }
-// 判断field的pb类型
+// 判断field的pb类型并返回; field:pb field, type:用于返回enum/message类型的key
 int 
 _pbcP_type(struct _field * field, const char ** type) {
 	if (field == NULL) {

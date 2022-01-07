@@ -19,7 +19,7 @@ struct _enum;
 #define LABEL_REQUIRED 1
 #define LABEL_REPEATED 2
 #define LABEL_PACKED 3
-// message field
+// protobuff message field
 struct _field {
 	int id;                     // 序号
 	const char *name;           // 标签名

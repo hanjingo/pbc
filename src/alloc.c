@@ -2,7 +2,7 @@
 #include <stdio.h>
 // 用于统计内存的申请和释放次数匹配
 static int _g = 0;
-
+// 分配内存，并记录到_g
 void * _pbcM_malloc(size_t sz) {
 	++ _g;
 	return malloc(sz);

@@ -28,17 +28,17 @@ _pbcS_delete(struct _stringpool *pool) {
 		pool = next;
 	}
 }
-
+// 将str放入stringpool，并返回其内容; str:字符串, sz:字符串长度
 const char *
 _pbcS_build(struct _stringpool *pool, const char * str , int sz) {
 	size_t s = sz + 1;
-	if (s < PAGE_SIZE - pool->len) {
+	if (s < PAGE_SIZE - pool->len) { // 当前页空闲空间足够，直接放入
 		char * ret = pool->buffer + pool->len;
 		memcpy(pool->buffer + pool->len, str, s);
 		pool->len += s;
 		return ret;
 	}
-	if (s > PAGE_SIZE) {
+	if (s > PAGE_SIZE) { // 字符串长度超过了页空间，新建stringpool
 		struct _stringpool * next = (struct _stringpool *)malloc(sizeof(struct _stringpool) + s);
 		next->buffer = (char *)(next + 1);
 		memcpy(next->buffer, str, s);
@@ -47,7 +47,7 @@ _pbcS_build(struct _stringpool *pool, const char * str , int sz) {
 		pool->next = next;
 		return next->buffer;
 	}
-	struct _stringpool *next = (struct _stringpool *)malloc(sizeof(struct _stringpool) + PAGE_SIZE);
+	struct _stringpool *next = (struct _stringpool *)malloc(sizeof(struct _stringpool) + PAGE_SIZE); // 页空闲空间不够，新建stringpool
 	next->buffer = pool->buffer;
 	next->next = pool->next;
 	next->len = pool->len;
